@@ -1,0 +1,7 @@
+.postgres
+.redis
+
+.env
+.env.test
+
+.coverage
