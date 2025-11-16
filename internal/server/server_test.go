@@ -36,7 +36,8 @@ func TestExpensesFlow(t *testing.T) {
 
 	list := listTransactions(t, app, sessionCookie)
 	require.Len(t, list, 1)
-	require.Equal(t, category.CategoryID, list[0].CategoryID)
+	require.NotNil(t, list[0].CategoryID)
+	require.Equal(t, category.CategoryID, *list[0].CategoryID)
 }
 
 type userPayload struct {
@@ -207,6 +208,6 @@ func testConfig() config.Config {
 		RedisURL:          "",
 		SessionCookieName: "sessionID",
 		SessionTTL:        24 * time.Hour,
-		CorsOrigins:       []string{"*"},
+		CorsOrigins:       []string{"http://test"},
 	}
 }
