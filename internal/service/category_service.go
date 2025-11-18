@@ -137,7 +137,7 @@ func (s *CategoryService) EnsureAndCreate(ctx context.Context, db *gorm.DB, user
 
 func (s *CategoryService) createWithDB(ctx context.Context, db *gorm.DB, userID string, input CreateCategoryInput) (*models.Category, error) {
 	if err := s.validator.Struct(input); err != nil {
-		return nil, apperror.New(apperror.ServerParamsMissing, err)
+		return nil, apperror.New(apperror.ServerParamsMissing, formatValidationErrors(err))
 	}
 
 	category := &models.Category{

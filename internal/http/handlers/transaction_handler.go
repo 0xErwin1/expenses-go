@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -40,7 +42,11 @@ type transactionEnvelope struct {
 func (h *TransactionHandler) Create(c *fiber.Ctx) error {
 	var payload transactionEnvelope
 	if err := c.BodyParser(&payload); err != nil {
-		return err
+		if ute, ok := err.(*json.UnmarshalTypeError); ok {
+			msg := fmt.Sprintf("field '%s' expects %s", ute.Field, ute.Type.String())
+			return apperror.New(apperror.ServerParamsMissing, msg)
+		}
+		return apperror.New(apperror.ServerParamsMissing, err.Error())
 	}
 
 	inputs := payload.Transactions

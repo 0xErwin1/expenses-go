@@ -28,10 +28,10 @@ type CreateTransactionInput struct {
 	Amount       float64                `json:"amount"`
 	Currency     models.Currency        `json:"currency"`
 	Note         string                 `json:"note"`
-	Day          *int                   `json:"day"`
+	Day          *FlexibleInt           `json:"day"`
 	Month        models.Month           `json:"month"`
-	Year         int                    `json:"year"`
-	ExchangeRate *float64               `json:"exchangeRate"`
+	Year         FlexibleInt            `json:"year"`
+	ExchangeRate *FlexibleFloat         `json:"exchangeRate"`
 	CategoryID   *string                `json:"categoryId"`
 	Category     *UpdateCategoryPayload `json:"category"`
 }
@@ -87,10 +87,10 @@ func (s *TransactionService) Create(ctx context.Context, userID string, payloads
 				Amount:        payloads[index].Amount,
 				Currency:      payloads[index].Currency,
 				Note:          payloads[index].Note,
-				Day:           payloads[index].Day,
+				Day:           toIntPointer(payloads[index].Day),
 				Month:         payloads[index].Month,
-				Year:          payloads[index].Year,
-				ExchangeRate:  payloads[index].ExchangeRate,
+				Year:          payloads[index].Year.Int(),
+				ExchangeRate:  toFloatPointer(payloads[index].ExchangeRate),
 				UserID:        userID,
 			}
 
@@ -141,12 +141,13 @@ func (s *TransactionService) validateTransaction(payload *CreateTransactionInput
 		errorsList = append(errorsList, validationIssue(index, "month", "Invalid month"))
 	}
 
-	if payload.Year < 2000 {
+	if payload.Year.Int() < 2000 {
 		errorsList = append(errorsList, validationIssue(index, "year", "Year must be >= 2000"))
 	}
 
 	if payload.Day != nil {
-		if *payload.Day <= 0 || *payload.Day > day.MaxDays(string(payload.Month), payload.Year) {
+		dayVal := payload.Day.Int()
+		if dayVal <= 0 || dayVal > day.MaxDays(string(payload.Month), payload.Year.Int()) {
 			errorsList = append(errorsList, validationIssue(index, "day", "Day is out of range for the provided month"))
 		}
 	}
@@ -175,6 +176,22 @@ func validationIssue(index int, field, message string) map[string]string {
 		"field": fmt.Sprintf("transactions[%d].%s", index, field),
 		"msg":   message,
 	}
+}
+
+func toIntPointer(f *FlexibleInt) *int {
+	if f == nil {
+		return nil
+	}
+	v := f.Int()
+	return &v
+}
+
+func toFloatPointer(f *FlexibleFloat) *float64 {
+	if f == nil {
+		return nil
+	}
+	v := f.Float64()
+	return &v
 }
 
 var validTransactionTypes = map[models.TransactionType]struct{}{

@@ -36,7 +36,7 @@ func NewUserService(db *gorm.DB) *UserService {
 // Create persists a new user and returns it.
 func (s *UserService) Create(ctx context.Context, input CreateUserInput) (*models.User, error) {
 	if err := s.validator.Struct(input); err != nil {
-		return nil, apperror.New(apperror.ServerParamsMissing, err)
+		return nil, apperror.New(apperror.ServerParamsMissing, formatValidationErrors(err))
 	}
 
 	normalizedEmail := strings.ToLower(input.Email)

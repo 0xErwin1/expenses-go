@@ -82,6 +82,9 @@ func (s *Server) App() *fiber.App {
 }
 
 func errorHandler(c *fiber.Ctx, err error) error {
+	// Log every error with method/path and body for easier debugging.
+	log.Printf("error on %s %s: %v | body=%s", c.Method(), c.Path(), err, string(c.Body()))
+
 	switch e := err.(type) {
 	case apperror.AppError:
 		def := apperror.Lookup(e.Code)
